@@ -173,15 +173,15 @@ void schedule_tasks() {
     int order_index = 0;
 
     while (completed_tasks < num_tasks) {
-        float best_priority = 1e9; // large number
+        int highest_priority = -1;
         int selected_task = -1;
 
         for (int i = 0; i < num_tasks; i++) {
             if (!tasks[i].completed && !check_dependency(i)) {
-                float aged_priority = tasks[i].priority - (current_time * AGING_FACTOR);
+                float aged_priority = tasks[i].priority + (current_time * AGING_FACTOR);
 
-                if (aged_priority < best_priority) {
-                    best_priority = aged_priority;
+                if (highest_priority < aged_priority) {
+                    highest_priority = aged_priority;
                     selected_task = i;
                 }
             }
@@ -208,10 +208,11 @@ void schedule_tasks() {
 
     // Reorder tasks array to match execution
     Task ordered_tasks[MAX_TASKS];
-    for (int i = 0; i < num_tasks; i++) {
-        ordered_tasks[i] = tasks[execution_order[i]];
-    }
-    memcpy(tasks, ordered_tasks, sizeof(Task) * num_tasks);  // Final overwrite
+for (int i = 0; i < num_tasks; i++) {
+    ordered_tasks[i] = tasks[execution_order[i]];
+}
+memcpy(tasks, ordered_tasks, sizeof(Task) * num_tasks);  // Final overwrite
+
 }
 
 int main(int argc, char *argv[]) {

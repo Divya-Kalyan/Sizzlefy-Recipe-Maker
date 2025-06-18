@@ -332,7 +332,7 @@ app.post('/tasks', async (req, res) => {
         // Format the content for input.txt
         const content = `${tasks.length}\n` + 
             tasks.map(task => 
-                `${task.name} ${task.priority} ${task.burst} 0`
+                `${task.name} ${task.priority} ${task.burst} ${task.arrival || 0}`
             ).join('\n') + '\n0';
         
         console.log('Writing to input.txt:', content);

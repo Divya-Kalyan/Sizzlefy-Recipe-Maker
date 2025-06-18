@@ -1,14 +1,14 @@
 {
-  "averageWaitingTime": 2.33,
-  "averageTurnaroundTime": 30.00,
+  "averageWaitingTime": 4.00,
+  "averageTurnaroundTime": 8.33,
   "executionOrder": [
-    "name1",
+    "hello",
     "yash",
-    "helllllloooo"
+    "piyush"
   ],
   "taskDetails": [
-    {"name": "name1", "priority": 1, "burst_time": 2, "waitingTime": 0, "turnaroundTime": 2},
-    {"name": "yash", "priority": 2, "burst_time": 3, "waitingTime": 2, "turnaroundTime": 5},
-    {"name": "helllllloooo", "priority": 5, "burst_time": 78, "waitingTime": 5, "turnaroundTime": 83}
+    {"name": "hello", "priority": 2, "burst_time": 3, "waitingTime": 0, "turnaroundTime": 3},
+    {"name": "yash", "priority": 7, "burst_time": 6, "waitingTime": 3, "turnaroundTime": 9},
+    {"name": "piyush", "priority": 9, "burst_time": 4, "waitingTime": 9, "turnaroundTime": 13}
   ]
 }
