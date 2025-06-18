@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gantt Chart Visualization</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .chart-container {
+            margin-top: 20px;
+            overflow-x: auto;
+        }
+        .gantt-chart {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .task-row {
+            display: flex;
+            align-items: center;
+            height: 40px;
+        }
+        .task-label {
+            width: 150px;
+            padding-right: 10px;
+            text-align: right;
+            font-weight: bold;
+        }
+        .task-bar {
+            height: 30px;
+            background-color: #4CAF50;
+            border-radius: 4px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        .task-bar:hover {
+            opacity: 0.8;
+        }
+        .time-scale {
+            display: flex;
+            margin-left: 150px;
+            padding: 5px 0;
+            border-bottom: 1px solid #ddd;
+        }
+        .time-marker {
+            flex: 1;
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+        }
+        .stats {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+        }
+        .stats p {
+            margin: 5px 0;
+            font-size: 16px;
+        }
+        .priority-1 { background-color: #FF6B6B; }
+        .priority-2 { background-color: #4ECDC4; }
+        .priority-3 { background-color: #45B7D1; }
+        .priority-4 { background-color: #96CEB4; }
+        .priority-5 { background-color: #FFEEAD; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Gantt Chart Visualization</h1>
+        <div class="stats">
+            <p>Average Waiting Time: <span id="avg-waiting">0</span> ms</p>
+            <p>Average Turnaround Time: <span id="avg-turnaround">0</span> ms</p>
+        </div>
+        <div class="chart-container">
+            <div class="time-scale" id="time-scale"></div>
+            <div class="gantt-chart" id="gantt-chart"></div>
+        </div>
+    </div>
+
+    <script>
+        async function loadGanttData() {
+            try {
+                const response = await fetch('/api/gantt-data');
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayGanttChart(data.ganttData);
+                    updateStats(data.avg_waiting, data.avg_turnaround);
+                } else {
+                    console.error('Failed to load Gantt data:', data.error);
+                }
+            } catch (error) {
+                console.error('Error loading Gantt data:', error);
+            }
+        }
+
+        function displayGanttChart(tasks) {
+            const chartContainer = document.getElementById('gantt-chart');
+            const timeScale = document.getElementById('time-scale');
+            chartContainer.innerHTML = '';
+            timeScale.innerHTML = '';
+
+            // Find the maximum time for scaling
+            const maxTime = Math.max(...tasks.map(task => task.end_time));
+            const scaleStep = Math.ceil(maxTime / 10);
+
+            // Create time scale
+            for (let i = 0; i <= maxTime; i += scaleStep) {
+                const marker = document.createElement('div');
+                marker.className = 'time-marker';
+                marker.textContent = i;
+                timeScale.appendChild(marker);
+            }
+
+            // Create task bars
+            tasks.forEach(task => {
+                const row = document.createElement('div');
+                row.className = 'task-row';
+
+                const label = document.createElement('div');
+                label.className = 'task-label';
+                label.textContent = task.name;
+                row.appendChild(label);
+
+                const bar = document.createElement('div');
+                bar.className = `task-bar priority-${task.priority}`;
+                bar.style.width = `${(task.duration / maxTime) * 100}%`;
+                bar.style.marginLeft = `${(task.start_time / maxTime) * 100}%`;
+                bar.title = `${task.name}\nStart: ${task.start_time}\nEnd: ${task.end_time}\nDuration: ${task.duration}`;
+                row.appendChild(bar);
+
+                chartContainer.appendChild(row);
+            });
+        }
+
+        function updateStats(avgWaiting, avgTurnaround) {
+            document.getElementById('avg-waiting').textContent = avgWaiting.toFixed(2);
+            document.getElementById('avg-turnaround').textContent = avgTurnaround.toFixed(2);
+        }
+
+        // Load data when page loads
+        window.addEventListener('load', loadGanttData);
+    </script>
+</body>
+</html> 

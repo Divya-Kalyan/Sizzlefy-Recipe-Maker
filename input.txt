@@ -1,0 +1,5 @@
+3
+name1 1 2 0
+yash 2 3 0
+helllllloooo 5 78 0
+0

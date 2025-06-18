@@ -1,0 +1,1576 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<link
+			href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap"
+			rel="stylesheet"
+		/>
+		<link rel="stylesheet" href="stylee.css">
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Task Scheduler UI</title>
+		<script src="https://cdn.tailwindcss.com"></script>
+		<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+		<style>
+			/* Add this in the head section or at the end of the body */
+			.custom-scrollbar::-webkit-scrollbar {
+				width: 8px;
+				height: 8px;
+			}
+
+			.custom-scrollbar::-webkit-scrollbar-track {
+				background: rgba(0, 0, 0, 0.05);
+				border-radius: 4px;
+				margin: 4px;
+			}
+
+			.custom-scrollbar::-webkit-scrollbar-thumb {
+				background: rgba(0, 0, 0, 0.2);
+				border-radius: 4px;
+				border: 2px solid transparent;
+				background-clip: padding-box;
+				transition: all 0.2s ease;
+			}
+
+			.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+				background: rgba(0, 0, 0, 0.3);
+				border: 1px solid transparent;
+				background-clip: padding-box;
+			}
+
+			/* Dark mode scrollbar */
+			.dark .custom-scrollbar::-webkit-scrollbar-track {
+				background: rgba(255, 255, 255, 0.05);
+			}
+
+			.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+				background: rgba(255, 255, 255, 0.2);
+			}
+
+			.dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+				background: rgba(255, 255, 255, 0.3);
+			}
+
+			/* Notification styling */
+			#notificationList {
+				scrollbar-width: thin;
+				scrollbar-color: rgba(0, 0, 0, 0.2) rgba(0, 0, 0, 0.05);
+			}
+
+			.dark #notificationList {
+				scrollbar-color: rgba(255, 255, 255, 0.2) rgba(255, 255, 255, 0.05);
+			}
+
+			/* Notification item styling */
+			.notification-item {
+				transition: all 0.2s ease;
+				border-left: 3px solid transparent;
+				margin-right: 4px;
+			}
+
+			.notification-item:hover {
+				transform: translateX(-4px);
+			}
+
+			.notification-item.success {
+				border-left-color: #10B981;
+			}
+
+			.notification-item.error {
+				border-left-color: #EF4444;
+			}
+
+			/* Light theme notification styles */
+			.light-theme .notification-item.success {
+				background-color: rgba(16, 185, 129, 0.1);
+				color: #065f46;
+			}
+
+			.light-theme .notification-item.error {
+				background-color: rgba(239, 68, 68, 0.1);
+				color: #991b1b;
+			}
+
+			/* Dark theme notification styles */
+			.dark .notification-item.success {
+				background-color: rgba(16, 185, 129, 0.2);
+				color: #10B981;
+			}
+
+			.dark .notification-item.error {
+				background-color: rgba(239, 68, 68, 0.2);
+				color: #EF4444;
+			}
+
+			.button-container {
+				display: flex;
+				gap: 10px;
+				margin-top: 20px;
+			}
+
+			.gantt-btn {
+				background-color: #45B7D1;
+				color: white;
+				padding: 10px 20px;
+				border: none;
+				border-radius: 4px;
+				cursor: pointer;
+				font-size: 16px;
+				transition: background-color 0.3s;
+			}
+
+			.gantt-btn:hover {
+				background-color: #3A9DB5;
+			}
+
+			.visualization-popup {
+				display: none;
+				position: fixed;
+				top: 0;
+				left: 0;
+				width: 100%;
+				height: 100%;
+				background-color: rgba(0, 0, 0, 0.7);
+				z-index: 1000;
+				justify-content: center;
+				align-items: center;
+				backdrop-filter: blur(4px);
+			}
+
+			.visualization-content {
+				background-color: #1e1e1e;
+				padding: 2rem;
+				border-radius: 12px;
+				width: 80%;
+				max-width: 800px;
+				max-height: 80vh;
+				overflow-y: auto;
+				color: #f0f0f0;
+				box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+				border: 1px solid rgba(255, 255, 255, 0.1);
+				position: relative;
+			}
+
+			.chart-container {
+				margin-top: 1.5rem;
+				height: 400px;
+				background-color: rgba(255, 255, 255, 0.05);
+				border-radius: 8px;
+				padding: 1rem;
+			}
+
+			.visualization-buttons {
+				display: flex;
+				gap: 1rem;
+				margin-bottom: 1.5rem;
+			}
+
+			.visualization-btn {
+				padding: 0.75rem 1.5rem;
+				border: none;
+				border-radius: 8px;
+				cursor: pointer;
+				background-color: #2d2d2d;
+				color: #f0f0f0;
+				transition: all 0.3s ease;
+				font-weight: 500;
+				border: 1px solid rgba(255, 255, 255, 0.1);
+			}
+
+			.visualization-btn:hover {
+				background-color: #3d3d3d;
+				transform: translateY(-2px);
+				box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+			}
+
+			.visualization-btn.active {
+				background-color: #4CAF50;
+				border-color: #4CAF50;
+			}
+
+			.close-btn {
+				position: absolute;
+				top: 1rem;
+				right: 1rem;
+				background: none;
+				border: none;
+				font-size: 1.5rem;
+				cursor: pointer;
+				color: #f0f0f0;
+				width: 32px;
+				height: 32px;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				border-radius: 50%;
+				transition: all 0.3s ease;
+			}
+
+			.close-btn:hover {
+				background-color: rgba(255, 0, 0, 0.2);
+				color: #ff4444;
+				transform: scale(1.1);
+			}
+
+			.visualization-title {
+				color: #f0f0f0;
+				font-size: 1.5rem;
+				font-weight: 600;
+				margin-bottom: 1.5rem;
+				padding-right: 2rem;
+			}
+		</style>
+	</head>
+	<body class="min-h-screen p-8 font-light">
+		<!-- Header bar with right-aligned buttons, scrolls with page -->
+		<div class="flex justify-end items-center mb-8 space-x-3">
+			<button id="themeToggleBtn" class="w-8 h-8 flex items-center justify-center text-lg button rounded-full hover:shadow-md transition duration-200 tracking-wider btn-base font-light">
+				☀
+			</button>
+			<div class="relative">
+				<button id="notifyBtn" class="w-8 h-8 flex items-center justify-center text-lg button rounded-full hover:shadow-md transition duration-200 tracking-wider btn-base font-light">
+					🔔
+				</button>
+				<span id="notificationDot" class="absolute -top-0.5 -right-0.5 w-2 h-2 bg-yellow-400 rounded-full hidden shadow-sm"></span>
+				<div id="notificationPanel" class="hidden absolute right-0 mt-2 w-[400px] panel rounded-lg shadow-xl p-4 z-10 border">
+					<div class="flex justify-between items-center mb-3">
+						<h3 class="text-base font-medium tracking-wide">Notifications</h3>
+						<button onclick="clearNotifications()" class="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+							Clear all
+						</button>
+					</div>
+					<div id="notificationList" class="space-y-2 max-h-[180px] overflow-y-auto font-light custom-scrollbar"></div>
+				</div>
+			</div>
+			<div class="relative">
+				<button id="profileBtn" class="w-8 h-8 flex items-center justify-center text-sm button rounded-full hover:shadow-md transition duration-200 tracking-wider btn-base font-light">
+					👤
+				</button>
+				<div id="profilePanel" class="hidden absolute right-0 mt-2 w-56 panel rounded-lg shadow-xl p-3 z-10 border">
+					<h3 class="text-base font-medium mb-2 tracking-wide">Profile</h3>
+					<input type="text" id="userName" placeholder="Enter your name" class="w-full input px-3 py-1.5 rounded-lg focus:outline-none focus:ring-2 text-sm font-light">
+					<button id="saveNameBtn" class="mt-2 w-full button px-3 py-1.5 rounded-lg transition duration-200 text-sm font-light tracking-wider">Save</button>
+				</div>
+			</div>
+		</div>
+		<div class="container w-full">
+			<!-- Add a Task Section -->
+			<div class="panel mb-12 text-center">
+				<h2 class="text-2xl font-medium mb-6 tracking-wide">Add a Task</h2>
+				<div id="manualForm" class="space-y-5">
+					<div class="flex items-center gap-4 mb-3">
+						<label for="taskName" class="text-base label tracking-wide text-left flex-shrink-0" style="width: 160px;">Task Name:</label>
+						<input id="taskName" type="text" placeholder="Enter task name..." class="input flex-1 p-3 rounded-lg focus:outline-none focus:ring-2 text-base tracking-wide flex items-center justify-center" onkeydown="handleEnterKey(event, 'priority')" />
+					</div>
+					<div class="flex items-center gap-4 mb-3">
+						<label for="priority" class="text-base label tracking-wide text-left flex-shrink-0" style="width: 160px;">Priority:</label>
+						<select id="priority" class="input flex-1 p-3 rounded-lg focus:outline-none focus:ring-2 text-base tracking-wide flex items-center justify-center" onkeydown="handleEnterKey(event, 'taskDuration')">
+							<option value="" disabled selected>Select priority</option>
+							<option value="1">1 - Highest</option>
+							<option value="2">2</option>
+							<option value="3">3</option>
+							<option value="4">4</option>
+							<option value="5">5</option>
+							<option value="6">6</option>
+							<option value="7">7</option>
+							<option value="8">8</option>
+							<option value="9">9</option>
+							<option value="10">10 - Lowest</option>
+						</select>
+					</div>
+					<div class="flex items-center gap-4 mb-3">
+						<label for="taskDuration" class="text-base label tracking-wide text-left flex-shrink-0" style="width: 160px;">Duration (mins):</label>
+						<div class="number-input-container flex-1 flex items-center justify-center">
+							<input id="taskDuration" type="number" placeholder="Enter duration in minutes" class="input w-full p-3 rounded-lg focus:outline-none focus:ring-2 text-base tracking-wide flex items-center justify-center" min="0" onkeydown="handleEnterKey(event, 'description')" />
+							<div class="number-input-buttons flex items-center justify-center">
+								<button type="button" class="number-input-button font-light tracking-wider" onclick="incrementDuration()">▲</button>
+								<button type="button" class="number-input-button font-light tracking-wider" onclick="decrementDuration()">▼</button>
+							</div>
+						</div>
+					</div>
+					<div class="flex items-center gap-4 mb-3">
+						<label for="description" class="text-base label tracking-wide text-left flex-shrink-0" style="width: 160px;">Description: <span class="text-gray-400 text-sm">(Optional)</span></label>
+						<textarea id="description" placeholder="Enter task description..." class="input flex-1 p-3 rounded-lg focus:outline-none focus:ring-2 min-h-[80px] text-base tracking-wide flex items-center justify-center" onkeydown="handleEnterKey(event, 'addTaskBtn')"></textarea>
+					</div>
+					<div class="flex justify-center mt-6">
+						<button id="addTaskBtn" class="w-2/3 py-3 button rounded-lg transition hover:shadow-lg duration-200 text-base font-light tracking-wider" onkeydown="handleEnterKey(event, null)">Add Task</button>
+					</div>
+				</div>
+			</div>
+
+			<!-- Task Dependencies Section -->
+			<div class="panel mb-12 text-center">
+				<h2 class="text-2xl font-medium mb-4 tracking-wide">Manage Dependencies</h2>
+				<div class="flex items-center gap-4 mb-4">
+					<label for="depTaskInput" class="text-base label tracking-wide text-left flex-shrink-0" style="width: 160px;">Task:</label>
+					<input id="depTaskInput" type="text" placeholder="Enter task name" class="input flex-1 p-3 rounded-lg focus:outline-none focus:ring-2 text-base tracking-wide" />
+					<label for="depOnInput" class="text-base label tracking-wide text-left flex-shrink-0" style="width: 160px;">Depends On:</label>
+					<input id="depOnInput" type="text" placeholder="Enter dependency task" class="input flex-1 p-3 rounded-lg focus:outline-none focus:ring-2 text-base tracking-wide" />
+				</div>
+				<div class="flex gap-6 justify-center mt-2">
+					<button id="addDepBtn" class="w-1/2 py-3 button rounded-lg shadow-md transition hover-effect hover:shadow-lg text-base font-light tracking-wider">Add Dependency</button>
+					<button id="removeDepBtn" class="w-1/2 py-3 button rounded-lg shadow-md transition hover-effect hover:shadow-lg text-base font-light tracking-wider">Remove Dependency</button>
+				</div>
+			</div>
+
+			<!-- Task List Section -->
+			<div class="panel p-8 rounded-2xl shadow-xl mb-8 text-center">
+				<h2 class="text-2xl font-medium mb-6 tracking-wide">Task List</h2>
+				<div class="mb-4">
+					<input id="taskSearch" type="text" placeholder="Type to filter tasks..." class="input p-3 rounded-lg w-full focus:outline-none focus:ring-2 transition duration-200 hover-effect tracking-wide" />
+				</div>
+				<div class="overflow-x-auto">
+					<table class="min-w-full text-left text-sm">
+						<thead>
+							<tr class="label border-b flex justify-center items-center">
+								<th class="w-[5%] py-3 tracking-wider flex items-center justify-center">#</th>
+								<th class="w-[15%] py-3 tracking-wider flex items-center justify-center">Name</th>
+								<th class="w-[15%] py-3 tracking-wider flex items-center justify-center">Duration</th>
+								<th class="w-[15%] py-3 tracking-wider flex items-center justify-center">Priority</th>
+								<th class="w-[15%] py-3 tracking-wider flex items-center justify-center">Description</th>
+								<th class="w-[15%] py-3 tracking-wider flex items-center justify-center">Dependency</th>
+								<th class="w-[20%] py-3 tracking-wider flex items-center justify-center">Actions</th>
+							</tr>
+						</thead>
+						<tbody id="tasksTableBody" class="divide-y">
+							<!-- Task rows will be rendered here by JS -->
+						</tbody>
+					</table>
+				</div>
+				<div class="mt-4 flex gap-6">
+					<button onclick="scheduleByPriority()" class="flex-1 py-3 button hover:scale-105 hover:shadow-lg transition-all rounded-xl flex items-center justify-center text-base tracking-wider">Schedule by Priority</button>
+					<button onclick="scheduleByDuration()" class="flex-1 py-3 button hover:scale-105 hover:shadow-lg transition-all rounded-xl flex items-center justify-center text-base tracking-wider">Schedule by Duration</button>
+				</div>
+			</div>
+
+			<!-- Control Buttons Section -->
+			<div class="flex flex-wrap justify-center gap-6 mt-6 font-light">
+				<button class="flex-1 py-3 button rounded-xl flex items-center justify-center hover:shadow-lg text-base tracking-wider" onclick="saveTasks()">Save Schedule</button>
+				<button class="flex-1 py-3 button rounded-xl flex items-center justify-center hover:shadow-lg text-base tracking-wider" onclick="runScheduler()">Generate Schedule</button>
+				<button class="flex-1 py-3 button rounded-xl flex items-center justify-center hover:shadow-lg text-base tracking-wider" onclick="runJavaGUI()">View Gantt chart</button>
+				<button class="flex-1 py-3 button rounded-xl flex items-center justify-center hover:shadow-lg text-base tracking-wider" onclick="loadTasks()">Visualise Graph</button>
+				<button class="flex-1 py-3 button rounded-xl flex items-center justify-center hover:shadow-lg text-base tracking-wider" onclick="restart()">Restart</button>
+				<button class="flex-1 py-3 button rounded-xl flex items-center justify-center hover:shadow-lg text-base tracking-wider" onclick="exit()">Exit</button>
+			</div>
+		</div>
+
+		<div id="visualizationPopup" class="visualization-popup">
+			<div class="visualization-content">
+				<button class="close-btn" onclick="closeVisualization()">✖</button>
+				<h2 class="visualization-title">Task Visualization</h2>
+				<div class="visualization-buttons">
+					<button class="visualization-btn active" onclick="showBarGraph(this, tasks)">Bar Graph</button>
+					<button class="visualization-btn" onclick="showLineGraph(this, tasks)">Line Graph</button>
+				</div>
+				<div class="chart-container">
+					<canvas id="taskChart"></canvas>
+				</div>
+			</div>
+		</div>
+
+		<script>
+			// Initialize tasks array
+			let tasks = [];
+
+			// Get DOM elements
+			const tasksTableBody = document.getElementById("tasksTableBody");
+			const taskSearch = document.getElementById("taskSearch");
+			const addTaskBtn = document.getElementById("addTaskBtn");
+			const taskName = document.getElementById("taskName");
+			const priority = document.getElementById("priority");
+			const taskDuration = document.getElementById("taskDuration");
+			const description = document.getElementById("description");
+			const addDepBtn = document.getElementById("addDepBtn");
+			const removeDepBtn = document.getElementById("removeDepBtn");
+			const depTaskInput = document.getElementById("depTaskInput");
+			const depOnInput = document.getElementById("depOnInput");
+
+			// Add event listeners
+			document.addEventListener('DOMContentLoaded', function() {
+				if (taskSearch) {
+					taskSearch.addEventListener("input", () => renderTasks(taskSearch.value.trim()));
+				}
+				if (addTaskBtn) {
+					addTaskBtn.addEventListener("click", addNewTask);
+				}
+				// Initial render
+				renderTasks();
+			});
+
+			// Duration increment/decrement functions
+			function incrementDuration() {
+				const input = document.getElementById('taskDuration');
+				const currentValue = parseInt(input.value) || 0;
+				input.value = currentValue + 1;
+			}
+
+			function decrementDuration() {
+				const input = document.getElementById('taskDuration');
+				const currentValue = parseInt(input.value) || 0;
+				if (currentValue > 0) {
+					input.value = currentValue - 1;
+				}
+			}
+
+			// API functions
+			async function saveTasks() {
+				try {
+					const response = await fetch('http://localhost:3000/api/save', {
+						method: 'POST',
+						headers: {
+							'Content-Type': 'application/json',
+						},
+						body: JSON.stringify({ tasks })
+					});
+					const data = await response.json();
+					if (data.success) {
+						addNotification("Tasks saved successfully!");
+					} else {
+						throw new Error(data.error);
+					}
+				} catch (error) {
+					addNotification("Error saving tasks: " + error.message, "error");
+				}
+			}
+
+			async function loadTasks() {
+				// Get tasks from the table
+				const tasks = [];
+				const rows = document.querySelectorAll('#tasksTableBody tr');
+				
+				rows.forEach(row => {
+					const cells = row.querySelectorAll('td');
+					if (cells.length >= 7) {
+						const task = {
+							name: cells[1].textContent.trim(),
+							priority: parseInt(cells[3].textContent.trim()),
+							duration: parseInt(cells[2].textContent.trim().replace(' mins', ''))
+						};
+						if (task.name && !isNaN(task.priority) && !isNaN(task.duration)) {
+							tasks.push(task);
+						}
+					}
+				});
+
+				if (tasks.length === 0) {
+					alert('Please add at least one task before visualizing.');
+					return;
+				}
+
+				showVisualization(tasks);
+			}
+
+			async function writeToInputFile() {
+				try {
+					const response = await fetch('http://localhost:3000/api/write-input', {
+						method: 'POST',
+						headers: {
+							'Content-Type': 'application/json',
+						},
+						body: JSON.stringify({ tasks })
+					});
+					const data = await response.json();
+					if (data.success) {
+						addNotification("Tasks written to input.txt successfully!");
+						return true;
+					} else {
+						throw new Error(data.error);
+					}
+				} catch (error) {
+					addNotification("Error writing to input.txt: " + error.message, "error");
+					return false;
+				}
+			}
+
+			async function runCProgram() {
+				try {
+					const response = await fetch('http://localhost:3000/api/run-c', {
+						method: 'POST'
+					});
+					const data = await response.json();
+					if (data.success) {
+						addNotification("C program executed successfully!");
+						return true;
+					} else {
+						throw new Error(data.error);
+					}
+				} catch (error) {
+					addNotification("Error running C program: " + error.message, "error");
+					return false;
+				}
+			}
+
+			async function readOutputFile() {
+				try {
+					const response = await fetch('http://localhost:3000/api/read-output');
+					const data = await response.json();
+					if (data.success) {
+						addNotification("Output file read successfully!");
+						return data.output;
+					} else {
+						throw new Error(data.error);
+					}
+				} catch (error) {
+					addNotification("Error reading output file: " + error.message, "error");
+					return null;
+				}
+			}
+
+			async function runScheduler() {
+				try {
+					// Get tasks from the table
+					const tasks = [];
+					const rows = document.querySelectorAll('#tasksTableBody tr');
+					
+					rows.forEach(row => {
+						const cells = row.querySelectorAll('td');
+						if (cells.length >= 7) { // Check for all required columns
+							const task = {
+								name: cells[1].textContent.trim(), // Name is in second column
+								priority: parseInt(cells[3].textContent.trim()), // Priority is in fourth column
+								burst: parseInt(cells[2].textContent.trim().replace(' mins', '')) // Duration is in third column, remove 'mins'
+							};
+							if (task.name && !isNaN(task.priority) && !isNaN(task.burst)) {
+								tasks.push(task);
+							}
+						}
+					});
+					
+					console.log('Collected tasks:', tasks);
+					
+					if (tasks.length === 0) {
+						alert('Please add at least one task before generating the schedule.');
+						return;
+					}
+					
+					// Save tasks
+					const saveResponse = await fetch('http://localhost:3000/tasks', {
+						method: 'POST',
+						headers: {
+							'Content-Type': 'application/json'
+						},
+						body: JSON.stringify(tasks)
+					});
+					
+					const saveData = await saveResponse.json();
+					console.log('Save response:', saveData);
+					
+					if (!saveData.success) {
+						throw new Error(saveData.error || 'Failed to save tasks');
+					}
+					
+					// Generate schedule
+					const generateResponse = await fetch('http://localhost:3000/generate', {
+						method: 'POST'
+					});
+					
+					const generateData = await generateResponse.json();
+					console.log('Generate response:', generateData);
+					
+					if (!generateData.success) {
+						throw new Error(generateData.error || 'Failed to generate schedule');
+					}
+					
+					// Display results
+					displayResults(generateData.output, generateData.summary);
+					
+				} catch (error) {
+					console.error('Error:', error);
+					alert('Error: ' + error.message);
+				}
+			}
+
+			function displayResults(output, summary) {
+				console.log('Displaying results:', { output, summary });
+				
+				// Parse the output JSON
+				let taskDetails = {};
+				try {
+					const data = JSON.parse(output);
+					console.log('Parsed output data:', data);
+					
+					if (data.taskDetails) {
+						// Get the original tasks from the table to map names correctly
+						const originalTasks = [];
+						const rows = document.querySelectorAll('#tasksTableBody tr');
+						
+						rows.forEach(row => {
+							const cells = row.querySelectorAll('td');
+							if (cells.length >= 7) {
+								const taskName = cells[1].textContent.trim();
+								if (taskName) {
+									originalTasks.push({ name: taskName });
+								}
+							}
+						});
+						
+						// Map the task details with correct names and data
+						taskDetails = data.taskDetails.map((task, index) => {
+							// Use the task name from the JSON output directly
+							return {
+								name: task.name, // Use the name from the scheduler output
+								priority: task.priority,
+								burst_time: task.burst_time,
+								waitingTime: task.waitingTime,
+								turnaroundTime: task.turnaroundTime
+							};
+						});
+					}
+				} catch (error) {
+					console.error('Error parsing output:', error);
+					alert('Error parsing scheduler output');
+					return;
+				}
+
+				// Create modal popup
+				const modal = document.createElement('div');
+				modal.className = 'fixed inset-0 bg-black/70 flex items-center justify-center z-50 backdrop-blur-sm';
+				
+				// Parse summary content
+				const summaryLines = summary.split('\n');
+				let avgWaitingTime = '';
+				let avgTurnaroundTime = '';
+				
+				summaryLines.forEach(line => {
+					if (line.includes('Average Waiting Time')) {
+						avgWaitingTime = line.split(':')[1].trim();
+					} else if (line.includes('Average Turnaround Time')) {
+						avgTurnaroundTime = line.split(':')[1].trim();
+					}
+				});
+
+				modal.innerHTML = `
+					<div class="bg-[#1e1e1e] p-8 rounded-xl shadow-2xl max-w-4xl w-full max-h-[80vh] overflow-y-auto relative">
+						<button onclick="this.closest('.fixed').remove()" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 absolute top-4 right-4">
+							<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+							</svg>
+						</button>
+						
+						<h2 class="text-2xl font-medium text-white mb-6">Scheduling Results</h2>
+						
+						<!-- Results Table -->
+						<div class="overflow-x-auto mb-6">
+							<table class="min-w-full text-left text-sm">
+								<thead>
+									<tr class="border-b border-gray-700">
+										<th class="py-3 px-4 text-gray-300 font-medium">Task Name</th>
+										<th class="py-3 px-4 text-gray-300 font-medium">Priority</th>
+										<th class="py-3 px-4 text-gray-300 font-medium">Duration</th>
+										<th class="py-3 px-4 text-gray-300 font-medium">Waiting Time</th>
+										<th class="py-3 px-4 text-gray-300 font-medium">Turnaround Time</th>
+									</tr>
+								</thead>
+								<tbody class="divide-y divide-gray-700">
+									${taskDetails.map((task, index) => `
+										<tr class="hover:bg-gray-800/50 transition-colors">
+											<td class="py-3 px-4 text-gray-300">${task.name}</td>
+											<td class="py-3 px-4 text-gray-300">${task.priority}</td>
+											<td class="py-3 px-4 text-gray-300">${task.burst_time}</td>
+											<td class="py-3 px-4 text-gray-300">${task.waitingTime}</td>
+											<td class="py-3 px-4 text-gray-300">${task.turnaroundTime}</td>
+										</tr>
+									`).join('')}
+								</tbody>
+							</table>
+						</div>
+						
+						<!-- Summary Section -->
+						<div class="bg-gray-800/50 rounded-lg p-4">
+							<h3 class="text-lg font-medium text-white mb-4">Summary</h3>
+							<div class="grid grid-cols-2 gap-4">
+								<div class="p-3 bg-gray-700/50 rounded">
+									<p class="text-gray-400">Average Waiting Time</p>
+									<p class="text-white text-lg font-medium">${avgWaitingTime}</p>
+								</div>
+								<div class="p-3 bg-gray-700/50 rounded">
+									<p class="text-gray-400">Average Turnaround Time</p>
+									<p class="text-white text-lg font-medium">${avgTurnaroundTime}</p>
+								</div>
+							</div>
+						</div>
+					</div>
+				`;
+				
+				document.body.appendChild(modal);
+				
+				// Close modal when clicking outside
+				modal.addEventListener('click', (e) => {
+					if (e.target === modal) {
+						modal.remove();
+					}
+				});
+			}
+
+			function showGanttChart(taskDetails) {
+				const ganttPopup = document.createElement('div');
+				ganttPopup.className = 'fixed inset-0 bg-black/70 flex items-center justify-center z-50 backdrop-blur-sm';
+				
+				// Calculate total duration for scaling
+				const maxTime = Math.max(...taskDetails.map(task => task.turnaroundTime));
+				const scaleStep = Math.ceil(maxTime / 10);
+
+				// Generate a unique color for each task
+				const getTaskColor = (index) => {
+					const colors = [
+						'rgba(75, 192, 192, 0.8)',   // Teal
+						'rgba(255, 99, 132, 0.8)',   // Pink
+						'rgba(54, 162, 235, 0.8)',   // Blue
+						'rgba(255, 206, 86, 0.8)',   // Yellow
+						'rgba(153, 102, 255, 0.8)',  // Purple
+						'rgba(255, 159, 64, 0.8)',   // Orange
+						'rgba(75, 192, 192, 0.8)',   // Teal
+						'rgba(255, 99, 132, 0.8)',   // Pink
+						'rgba(54, 162, 235, 0.8)',   // Blue
+						'rgba(255, 206, 86, 0.8)'    // Yellow
+					];
+					return colors[index % colors.length];
+				};
+
+				ganttPopup.innerHTML = `
+					<div class="bg-[#1e1e1e] p-8 rounded-xl shadow-2xl max-w-4xl w-full max-h-[80vh] overflow-y-auto relative">
+						<button onclick="this.closest('.fixed').remove()" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 absolute top-4 right-4">
+							<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+							</svg>
+						</button>
+						
+						<h2 class="text-2xl font-medium text-white mb-6">Task Execution Timeline</h2>
+						
+						<div class="space-y-6">
+							<!-- Time scale -->
+							<div class="flex mb-2">
+								<div class="w-40 flex-shrink-0"></div>
+								<div class="flex-1 relative h-6">
+									${Array.from({length: Math.ceil(maxTime/scaleStep) + 1}, (_, i) => `
+										<div class="absolute left-[${(i * scaleStep / maxTime) * 100}%] text-xs text-gray-400">
+											${i * scaleStep}
+										</div>
+									`).join('')}
+								</div>
+							</div>
+							
+							<!-- Gantt bars -->
+							<div class="space-y-4">
+								${taskDetails.map((task, index) => {
+									const startPercent = (task.waitingTime / maxTime) * 100;
+									const widthPercent = (task.burst_time / maxTime) * 100;
+									const taskColor = getTaskColor(index);
+									return `
+										<div class="flex items-center group">
+											<div class="w-40 flex-shrink-0 text-sm text-gray-300">${task.name}</div>
+											<div class="flex-1 h-8 bg-gray-800 rounded relative">
+												<div class="absolute h-full rounded transition-all duration-200 hover:scale-y-110 hover:shadow-lg"
+													style="left: ${startPercent}%; width: ${widthPercent}%; background-color: ${taskColor}">
+													<div class="absolute inset-0 flex items-center justify-center text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+														${task.waitingTime} - ${task.turnaroundTime}
+													</div>
+												</div>
+											</div>
+										</div>
+									`;
+								}).join('')}
+							</div>
+
+							<!-- Legend -->
+							<div class="mt-8 p-4 bg-gray-800/50 rounded-lg">
+								<h3 class="text-lg font-medium text-white mb-4">Task Details</h3>
+								<div class="grid grid-cols-2 gap-4">
+									${taskDetails.map((task, index) => `
+										<div class="flex items-center space-x-2">
+											<div class="w-4 h-4 rounded" style="background-color: ${getTaskColor(index)}"></div>
+											<span class="text-gray-300">${task.name}</span>
+											<span class="text-gray-400">(Priority: ${task.priority})</span>
+										</div>
+									`).join('')}
+								</div>
+							</div>
+						</div>
+					</div>
+				`;
+				
+				document.body.appendChild(ganttPopup);
+				
+				// Close popup when clicking outside
+				ganttPopup.addEventListener('click', (e) => {
+					if (e.target === ganttPopup) {
+						ganttPopup.remove();
+					}
+				});
+			}
+
+			// Add this at the top of your script section
+			let taskChart = null;
+
+			function showVisualization(tasks) {
+				const popup = document.getElementById('visualizationPopup');
+				popup.style.display = 'flex';
+				
+				// Update the close button in the visualization popup
+				const closeBtn = popup.querySelector('.close-btn');
+				if (closeBtn) {
+					closeBtn.innerHTML = `
+						<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+						</svg>
+					`;
+					closeBtn.className = 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 absolute top-4 right-4';
+				}
+				
+				// Update visualization buttons
+				const visualizationButtons = document.querySelector('.visualization-buttons');
+				visualizationButtons.innerHTML = `
+					<button class="visualization-btn active" onclick="showBarGraph(this, tasks)">Bar Graph</button>
+					<button class="visualization-btn" onclick="showLineGraph(this, tasks)">Line Graph</button>
+				`;
+
+				// Create chart container
+				const chartContainer = document.querySelector('.chart-container');
+				chartContainer.innerHTML = `
+					<canvas id="taskChart"></canvas>
+				`;
+
+				// Show bar graph by default
+				const defaultButton = visualizationButtons.querySelector('.visualization-btn');
+				showBarGraph(defaultButton, tasks);
+			}
+
+			function showBarGraph(button, tasks) {
+				updateActiveButton(button);
+				
+				const taskLabels = tasks.map(task => task.name);
+				const priorities = tasks.map(task => task.priority);
+				const durations = tasks.map(task => task.duration);
+
+				if (taskChart) {
+					taskChart.destroy();
+				}
+
+				const isLightTheme = document.body.classList.contains('light-theme');
+				const textColor = isLightTheme ? '#1f2937' : '#f0f0f0';
+				const gridColor = isLightTheme ? 'rgba(0, 0, 0, 0.1)' : 'rgba(255, 255, 255, 0.1)';
+
+				const ctx = document.getElementById('taskChart').getContext('2d');
+				taskChart = new Chart(ctx, {
+					type: 'bar',
+					data: {
+						labels: taskLabels,
+						datasets: [
+							{
+								label: 'Priority',
+								data: priorities,
+								backgroundColor: isLightTheme ? 'rgba(75, 192, 192, 0.4)' : 'rgba(75, 192, 192, 0.6)',
+								borderColor: isLightTheme ? 'rgba(75, 192, 192, 0.8)' : 'rgba(75, 192, 192, 1)',
+								borderWidth: 1,
+								yAxisID: 'y'
+							},
+							{
+								label: 'Duration (mins)',
+								data: durations,
+								backgroundColor: isLightTheme ? 'rgba(255, 99, 132, 0.4)' : 'rgba(255, 99, 132, 0.6)',
+								borderColor: isLightTheme ? 'rgba(255, 99, 132, 0.8)' : 'rgba(255, 99, 132, 1)',
+								borderWidth: 1,
+								yAxisID: 'y1'
+							}
+						]
+					},
+					options: {
+						responsive: true,
+						maintainAspectRatio: false,
+						scales: {
+							y: {
+								beginAtZero: true,
+								type: 'linear',
+								display: true,
+								position: 'left',
+								title: {
+									display: true,
+									text: 'Priority',
+									color: textColor
+								},
+								grid: {
+									color: gridColor
+								},
+								ticks: {
+									color: textColor
+								}
+							},
+							y1: {
+								beginAtZero: true,
+								type: 'linear',
+								display: true,
+								position: 'right',
+								title: {
+									display: true,
+									text: 'Duration (mins)',
+									color: textColor
+								},
+								grid: {
+									drawOnChartArea: false
+								},
+								ticks: {
+									color: textColor
+								}
+							},
+							x: {
+								grid: {
+									color: gridColor
+								},
+								ticks: {
+									color: textColor
+								}
+							}
+						},
+						plugins: {
+							legend: {
+								labels: {
+									color: textColor
+								}
+							},
+							title: {
+								display: true,
+								text: 'Task Priority and Duration Comparison',
+								color: textColor,
+								font: {
+									size: 16
+								}
+							}
+						}
+					}
+				});
+			}
+
+			function showLineGraph(button, tasks) {
+				updateActiveButton(button);
+				
+				const taskLabels = tasks.map(task => task.name);
+				const priorities = tasks.map(task => task.priority);
+				const durations = tasks.map(task => task.duration);
+
+				if (taskChart) {
+					taskChart.destroy();
+				}
+
+				const isLightTheme = document.body.classList.contains('light-theme');
+				const textColor = isLightTheme ? '#1f2937' : '#f0f0f0';
+				const gridColor = isLightTheme ? 'rgba(0, 0, 0, 0.1)' : 'rgba(255, 255, 255, 0.1)';
+
+				const ctx = document.getElementById('taskChart').getContext('2d');
+				taskChart = new Chart(ctx, {
+					type: 'line',
+					data: {
+						labels: taskLabels,
+						datasets: [
+							{
+								label: 'Priority',
+								data: priorities,
+								borderColor: isLightTheme ? 'rgba(75, 192, 192, 0.8)' : 'rgba(75, 192, 192, 1)',
+								backgroundColor: isLightTheme ? 'rgba(75, 192, 192, 0.1)' : 'rgba(75, 192, 192, 0.2)',
+								tension: 0.4,
+								fill: true,
+								yAxisID: 'y'
+							},
+							{
+								label: 'Duration (mins)',
+								data: durations,
+								borderColor: isLightTheme ? 'rgba(255, 99, 132, 0.8)' : 'rgba(255, 99, 132, 1)',
+								backgroundColor: isLightTheme ? 'rgba(255, 99, 132, 0.1)' : 'rgba(255, 99, 132, 0.2)',
+								tension: 0.4,
+								fill: true,
+								yAxisID: 'y1'
+							}
+						]
+					},
+					options: {
+						responsive: true,
+						maintainAspectRatio: false,
+						scales: {
+							y: {
+								beginAtZero: true,
+								type: 'linear',
+								display: true,
+								position: 'left',
+								title: {
+									display: true,
+									text: 'Priority',
+									color: textColor
+								},
+								grid: {
+									color: gridColor
+								},
+								ticks: {
+									color: textColor
+								}
+							},
+							y1: {
+								beginAtZero: true,
+								type: 'linear',
+								display: true,
+								position: 'right',
+								title: {
+									display: true,
+									text: 'Duration (mins)',
+									color: textColor
+								},
+								grid: {
+									drawOnChartArea: false
+								},
+								ticks: {
+									color: textColor
+								}
+							},
+							x: {
+								grid: {
+									color: gridColor
+								},
+								ticks: {
+									color: textColor
+								}
+							}
+						},
+						plugins: {
+							legend: {
+								labels: {
+									color: textColor
+								}
+							},
+							title: {
+								display: true,
+								text: 'Task Priority and Duration Trends',
+								color: textColor,
+								font: {
+									size: 16
+								}
+							}
+						}
+					}
+				});
+			}
+
+			function updateActiveButton(clickedButton) {
+				const buttons = clickedButton.closest('.visualization-buttons').querySelectorAll('button');
+				buttons.forEach(btn => {
+					btn.classList.remove('active');
+					btn.classList.remove('bg-blue-700');
+				});
+				clickedButton.classList.add('active');
+				clickedButton.classList.add('bg-blue-700');
+			}
+
+			function closeVisualization() {
+				const popup = document.getElementById('visualizationPopup');
+				popup.style.display = 'none';
+				if (taskChart) {
+					taskChart.destroy();
+					taskChart = null;
+				}
+			}
+
+			// Add restart function
+			function restart() {
+				if (confirm('Are you sure you want to restart? All unsaved changes will be lost.')) {
+					tasks = [];
+					renderTasks();
+					addNotification("System restarted successfully!");
+				}
+			}
+
+			// Add exit function
+			function exit() {
+				if (confirm('Are you sure you want to exit?')) {
+					window.close();
+				}
+			}
+
+			// Add scheduling functions
+			function scheduleByPriority() {
+				// Sort tasks by priority but don't modify the display
+				const sortedTasks = [...tasks].sort((a, b) => parseInt(a.priority) - parseInt(b.priority));
+				addNotification("Tasks sorted by priority (not displayed)");
+				return sortedTasks;
+			}
+
+			function scheduleByDuration() {
+				// Sort tasks by duration but don't modify the display
+				const sortedTasks = [...tasks].sort((a, b) => parseInt(a.duration) - parseInt(b.duration));
+				addNotification("Tasks sorted by duration (not displayed)");
+				return sortedTasks;
+			}
+
+			// Add this new function to handle Enter key navigation
+			function handleEnterKey(event, nextFieldId) {
+				if (event.key === 'Enter') {
+					event.preventDefault();
+					
+					if (nextFieldId) {
+						const nextField = document.getElementById(nextFieldId);
+						if (nextField) {
+							nextField.focus();
+							
+							// If it's a select element, open the dropdown
+							if (nextField.tagName === 'SELECT') {
+								nextField.click();
+							}
+						}
+					} else {
+						// If no next field, trigger the add task button
+						document.getElementById('addTaskBtn').click();
+					}
+				}
+			}
+
+			// Update the addNewTask function to reset focus to the first field
+			function addNewTask() {
+				const name = taskName.value.trim();
+				const priorityValue = priority.value;
+				const duration = taskDuration.value;
+				const desc = description.value.trim();
+				
+				if (!name || !priorityValue || !duration) {
+					const message = "Please fill in all required fields (Task Name, Priority, and Duration)";
+					alert(message);
+					addNotification(message, "error");
+					return;
+				}
+				
+				// Add new task
+				const newTask = {
+					name,
+					priority: priorityValue,
+					duration,
+					description: desc
+				};
+				
+				tasks.push(newTask);
+				console.log('Added new task:', newTask);
+				console.log('Current tasks:', tasks);
+				
+				// Reset form
+				taskName.value = "";
+				priority.value = "";
+				taskDuration.value = "";
+				description.value = "";
+				
+				// Focus back on the first field
+				taskName.focus();
+				
+				// Refresh task list
+				renderTasks();
+				addNotification("Task added successfully!");
+			}
+
+			// Dependency validation functions
+			function checkCircularDependency(taskName, depName, visited = new Set()) {
+				if (taskName === depName) return true;
+				if (visited.has(taskName)) return false;
+				
+				visited.add(taskName);
+				const task = findTaskByName(taskName);
+				
+				if (!task || !task.dependencies) return false;
+				
+				for (const dep of task.dependencies) {
+					if (checkCircularDependency(dep, depName, new Set(visited))) {
+						return true;
+					}
+				}
+				return false;
+			}
+
+			function validateDependency(taskName, depName) {
+				// Check if task exists
+				const task = findTaskByName(taskName);
+				if (!task) {
+					return {
+						valid: false,
+						message: `Task "${taskName}" does not exist`
+					};
+				}
+
+				// Check if dependency task exists
+				const depTask = findTaskByName(depName);
+				if (!depTask) {
+					return {
+						valid: false,
+						message: `Dependency task "${depName}" does not exist`
+					};
+				}
+
+				// Check for self-dependency
+				if (taskName === depName) {
+					return {
+						valid: false,
+						message: `Task "${taskName}" cannot depend on itself`
+					};
+				}
+
+				// Check for circular dependency
+				if (checkCircularDependency(depName, taskName)) {
+					return {
+						valid: false,
+						message: `Circular dependency detected: ${taskName} -> ${depName}`
+					};
+				}
+
+				// Check if dependency is already added
+				if (task.dependencies && task.dependencies.includes(depName)) {
+					return {
+						valid: false,
+						message: `Dependency "${depName}" already exists for "${taskName}"`
+					};
+				}
+
+				return { valid: true };
+			}
+
+			// Add dependency
+			addDepBtn.addEventListener("click", () => {
+				const taskName = depTaskInput.value.trim();
+				const depName = depOnInput.value.trim();
+
+				if (!taskName || !depName) {
+					const message = "Please enter both task and dependency names";
+					alert(message);
+					addNotification(message, "error");
+					return;
+				}
+
+				const validation = validateDependency(taskName, depName);
+				if (!validation.valid) {
+					alert(validation.message);
+					addNotification(validation.message, "error");
+					return;
+				}
+
+				const task = findTaskByName(taskName);
+				if (!task.dependencies) {
+					task.dependencies = [];
+				}
+
+				task.dependencies.push(depName);
+				const successMessage = `Added dependency: ${taskName} depends on ${depName}`;
+				addNotification(successMessage);
+				
+				// Clear inputs
+				depTaskInput.value = "";
+				depOnInput.value = "";
+				
+				// Update task list
+				renderTasks();
+			});
+
+			// Remove dependency
+			removeDepBtn.addEventListener("click", () => {
+				const taskName = depTaskInput.value.trim();
+				const depName = depOnInput.value.trim();
+
+				if (!taskName || !depName) {
+					addNotification("Please enter both task and dependency names", "error");
+					return;
+				}
+
+				const task = findTaskByName(taskName);
+				if (!task || !task.dependencies) {
+					addNotification(`No dependencies found for "${taskName}"`, "error");
+					return;
+				}
+
+				const depIndex = task.dependencies.indexOf(depName);
+				if (depIndex === -1) {
+					addNotification(`Dependency "${depName}" not found for "${taskName}"`, "error");
+					return;
+				}
+
+				task.dependencies.splice(depIndex, 1);
+				addNotification(`Removed dependency: ${taskName} no longer depends on ${depName}`);
+				
+				// Clear inputs
+				depTaskInput.value = "";
+				depOnInput.value = "";
+				
+				// Update task list
+				renderTasks();
+			});
+
+			// Helper function to find task by name
+			function findTaskByName(name) {
+				return tasks.find(task => task.name.toLowerCase() === name.toLowerCase());
+			}
+
+			// Render tasks function
+			function renderTasks(searchTerm = "") {
+				if (!tasksTableBody) return;
+				
+				tasksTableBody.innerHTML = "";
+				const filteredTasks = tasks.filter((task) =>
+					task.name.toLowerCase().includes(searchTerm.toLowerCase())
+				);
+
+				if (filteredTasks.length === 0) {
+					const row = document.createElement("tr");
+					row.className = "flex justify-center items-center";
+					row.innerHTML = `
+						<td colspan="7" class="px-4 py-4 text-center text-gray-400 flex items-center justify-center w-full">
+							No tasks found. Add a task to get started.
+						</td>
+					`;
+					tasksTableBody.appendChild(row);
+					return;
+				}
+
+				filteredTasks.forEach((task, idx) => {
+					const row = document.createElement("tr");
+					row.className = "flex justify-center items-center hover:bg-gray-50/10 transition-colors duration-200";
+					row.innerHTML = `
+						<td class="w-[5%] px-4 py-2 flex items-center justify-center text-gray-400">${idx + 1}</td>
+						<td class="w-[15%] px-4 py-2 flex items-center justify-center">${task.name}</td>
+						<td class="w-[15%] px-4 py-2 flex items-center justify-center">${task.duration} mins</td>
+						<td class="w-[15%] px-4 py-2 flex items-center justify-center">${task.priority}</td>
+						<td class="w-[15%] px-4 py-2 flex items-center justify-center">${task.description || '-'}</td>
+						<td class="w-[15%] px-4 py-2 flex items-center justify-center">
+							${task.dependencies && task.dependencies.length > 0 ? 
+								`<div class="flex flex-col gap-1">
+									${task.dependencies.map(dep => 
+										`<span class="px-2 py-1 bg-blue-500/20 text-blue-300 rounded-full text-xs">${dep}</span>`
+									).join('')}
+								</div>` 
+								: '<span class="text-gray-400 text-sm">None</span>'}
+						</td>
+						<td class="w-[20%] px-4 py-2 flex items-center justify-center">
+							<div class="flex gap-3 justify-center w-full">
+								<button onclick="editTask(${idx})" class="button py-1 px-6 rounded-lg text-sm transition-all duration-200 hover:shadow-md flex-1">Edit</button>
+								<button onclick="deleteTask(${idx})" class="button py-1 px-6 rounded-lg text-sm transition-all duration-200 hover:shadow-md flex-1">Delete</button>
+							</div>
+						</td>
+					`;
+					tasksTableBody.appendChild(row);
+				});
+			}
+
+			// Edit task function
+			function editTask(index) {
+				const task = tasks[index];
+				
+				// Fill the form with task details
+				taskName.value = task.name;
+				priority.value = task.priority;
+				taskDuration.value = task.duration;
+				description.value = task.description || '';
+				
+				// Scroll to the form
+				document.querySelector('.panel').scrollIntoView({ behavior: 'smooth' });
+				
+				// Update add button to save changes
+				addTaskBtn.textContent = 'Save Changes';
+				addTaskBtn.onclick = () => saveTaskChanges(index);
+				
+				// Add notification
+				addNotification("Editing task: " + task.name);
+			}
+
+			// Save task changes function
+			function saveTaskChanges(index) {
+				const name = taskName.value.trim();
+				const priorityValue = priority.value;
+				const duration = taskDuration.value;
+				const desc = description.value.trim();
+
+				if (!name || !priorityValue || !duration) {
+					const message = "Please fill in all required fields (Task Name, Priority, and Duration)";
+					alert(message);
+					addNotification(message, "error");
+					return;
+				}
+
+				// Update task
+				tasks[index] = {
+					...tasks[index],
+					name,
+					priority: priorityValue,
+					duration,
+					description: desc
+				};
+
+				// Reset form and button
+				resetTaskForm();
+				
+				// Update display
+				renderTasks();
+				addNotification("Task updated successfully!");
+			}
+
+			// Reset form function
+			function resetTaskForm() {
+				taskName.value = "";
+				priority.value = "";
+				taskDuration.value = "";
+				description.value = "";
+				addTaskBtn.textContent = 'Add Task';
+				addTaskBtn.onclick = addNewTask;
+			}
+
+			// Delete task function
+			function deleteTask(index) {
+				if (confirm('Are you sure you want to delete this task?')) {
+					tasks.splice(index, 1);
+					renderTasks();
+					addNotification("Task deleted successfully!");
+				}
+			}
+
+			// Theme toggle functionality
+			const themeToggleBtn = document.getElementById("themeToggleBtn");
+			const body = document.body;
+
+			themeToggleBtn.addEventListener("click", () => {
+				body.classList.toggle("light-theme");
+				
+				// Update theme icon
+				themeToggleBtn.innerHTML = body.classList.contains("light-theme") ? "🌙" : "☀";
+				
+				// Update notification dot color
+				const notificationDot = document.getElementById("notificationDot");
+				if (notificationDot) {
+					notificationDot.classList.toggle("bg-yellow-400", !body.classList.contains("light-theme"));
+					notificationDot.classList.toggle("bg-[#5ab8a0]", body.classList.contains("light-theme"));
+				}
+			});
+
+			// Notification functionality
+			const notifyBtn = document.getElementById("notifyBtn");
+			const notificationPanel = document.getElementById("notificationPanel");
+			const notificationDot = document.getElementById("notificationDot");
+			const notificationList = document.getElementById("notificationList");
+
+			notifyBtn.addEventListener("click", () => {
+				notificationPanel.classList.toggle("hidden");
+			});
+
+			// Close notification panel when clicking outside
+			document.addEventListener("click", (e) => {
+				if (!notifyBtn.contains(e.target) && !notificationPanel.contains(e.target)) {
+					notificationPanel.classList.add("hidden");
+				}
+			});
+
+			// Update the profile functionality
+			const profileBtn = document.getElementById("profileBtn");
+			const profilePanel = document.getElementById("profilePanel");
+			const userName = document.getElementById("userName");
+			const saveNameBtn = document.getElementById("saveNameBtn");
+
+			function updateProfileIcon(name) {
+				if (name && name.trim()) {
+					const firstLetter = name.trim().charAt(0).toUpperCase();
+					profileBtn.innerHTML = firstLetter;
+					profileBtn.classList.add("text-white");
+				} else {
+					profileBtn.innerHTML = "👤";
+					profileBtn.classList.remove("text-white");
+				}
+			}
+
+			profileBtn.addEventListener("click", () => {
+				profilePanel.classList.toggle("hidden");
+			});
+
+			// Close profile panel when clicking outside
+			document.addEventListener("click", (e) => {
+				if (!profileBtn.contains(e.target) && !profilePanel.contains(e.target)) {
+					profilePanel.classList.add("hidden");
+				}
+			});
+
+			saveNameBtn.addEventListener("click", () => {
+				const name = userName.value.trim();
+				if (name) {
+					localStorage.setItem("userName", name);
+					updateProfileIcon(name);
+					profilePanel.classList.add("hidden");
+				}
+			});
+
+			// Load saved name on page load
+			window.addEventListener("load", () => {
+				const savedName = localStorage.getItem("userName");
+				if (savedName) {
+					userName.value = savedName;
+					updateProfileIcon(savedName);
+				}
+			});
+
+			// Update the addNotification function
+			function addNotification(message, type = "success") {
+				const notification = document.createElement("div");
+				notification.className = `notification-item text-sm p-3 rounded-lg ${
+					type === "success" 
+						? "success bg-green-500/20 text-green-300 hover:bg-green-500/30" 
+						: "error bg-red-500/20 text-red-300 hover:bg-red-500/30"
+				}`;
+				
+				// Handle multiple lines in message
+				const formattedMessage = message.split('\n').map(line => 
+					`<div class="mb-1">${line}</div>`
+				).join('');
+				
+				notification.innerHTML = formattedMessage;
+				notificationList.insertBefore(notification, notificationList.firstChild);
+				notificationDot.classList.remove("hidden");
+				
+				// Show notification panel
+				notificationPanel.classList.remove("hidden");
+				
+				// Auto-hide notification dot if no notifications
+				if (notificationList.children.length === 0) {
+					notificationDot.classList.add("hidden");
+				}
+			}
+
+			// Update clear notifications function
+			function clearNotifications() {
+				notificationList.innerHTML = '';
+				notificationDot.classList.add("hidden");
+				notificationPanel.classList.add("hidden");
+			}
+
+			function runJavaGUI() {
+				// Get tasks from the table
+				const tasks = [];
+				const rows = document.querySelectorAll('#tasksTableBody tr');
+				
+				rows.forEach(row => {
+					const cells = row.querySelectorAll('td');
+					if (cells.length >= 7) {
+						const task = {
+							name: cells[1].textContent.trim(),
+							priority: parseInt(cells[3].textContent.trim()),
+							burst_time: parseInt(cells[2].textContent.trim().replace(' mins', '')),
+							waitingTime: 0, // Will be calculated
+							turnaroundTime: 0 // Will be calculated
+						};
+						if (task.name && !isNaN(task.priority) && !isNaN(task.burst_time)) {
+							tasks.push(task);
+						}
+					}
+				});
+
+				if (tasks.length === 0) {
+					alert('Please add at least one task before viewing the Gantt chart.');
+					return;
+				}
+
+				// Calculate waiting and turnaround times
+				let currentTime = 0;
+				tasks.sort((a, b) => a.priority - b.priority); // Sort by priority
+
+				tasks.forEach(task => {
+					task.waitingTime = currentTime;
+					currentTime += task.burst_time;
+					task.turnaroundTime = currentTime;
+				});
+
+				showGanttChart(tasks);
+			}
+		</script>
+	</body>
+</html>

@@ -1,0 +1,270 @@
+/* Base styles */
+body {
+    background: linear-gradient(135deg, #181c24 0%, #23283a 100%);
+    font-family: "Inter", sans-serif;
+    letter-spacing: 0.03em;
+    font-weight: 400;
+    color: white;
+}
+
+/* Dark theme styles */
+.bg-\[\#23283a\] {
+    background-color: #23283a;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.bg-\[\#181c24\] {
+    background-color: #181c24;
+    color: white;
+}
+
+.bg-\[\#4a90e2\] {
+    background-color: #4a90e2;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.hover\:bg-\[\#357abd\]:hover {
+    background-color: #357abd;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Hover effects */
+.hover-effect {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.hover-effect:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.hover-effect:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Button styles */
+.btn-base {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    font-weight: 300;
+    letter-spacing: 0.04em;
+}
+
+.btn-base:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.btn-base:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Panel (card/section backgrounds) */
+.panel {
+    width: 100%;
+    background-color: #23283a;
+    color: #fff;
+    border-radius: 1rem;
+    padding: 2.5rem 2rem;
+    margin-bottom: 3rem;
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+}
+
+/* Input fields */
+.input {
+    background-color: #181c24;
+    color: #fff;
+    border: 1px solid #23283a;
+    padding: 0.75rem 1.25rem;
+    font-size: 1.1rem;
+    border-radius: 0.75rem;
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    display: block;
+}
+
+/* Buttons */
+.button {
+    background-color: #4a90e2;
+    color: #fff;
+    border: none;
+    transition: background 0.2s, transform 0.15s, box-shadow 0.15s;
+    padding: 0.75rem 1.25rem;
+    font-size: 1.1rem;
+    border-radius: 0.75rem;
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    display: block;
+}
+.button:hover {
+    background-color: #357abd;
+    transform: scale(1.05) translateY(-2px);
+    box-shadow: 0 10px 25px 0 rgba(74, 144, 226, 0.35), 0 8px 24px 0 rgba(74, 144, 226, 0.22);
+}
+
+/* Labels and table headers */
+.label {
+    color: #b0b8c1;
+    font-size: 1.05rem;
+    text-align: left;
+    width: 100%;
+    max-width: none;
+    margin: 0 0 0.5rem 0;
+    display: block;
+}
+
+/* Table borders */
+table, th, td, .divide-y, .border-b, .border {
+    border-color: #23283a;
+}
+
+/* Center table content */
+table th, table td {
+    text-align: center;
+}
+
+/* Light theme variables */
+:root {
+    --light-bg: #BBD8A3;
+    --light-panel: #DDF6D2;
+    --light-text: #1A1A1A;
+    --light-button: #CAE8BD;
+    --light-button-hover: #B0DB9C;
+    --light-input: #ECFAE5;
+    --light-border: #B0DB9C;
+    --light-accent: #CAE8BD;
+    --light-text-secondary: #2A2A2A;
+    --light-shadow: rgba(176, 219, 156, 0.15);
+    --light-highlight: #ECFAE5;
+    --light-hover: #ECFAE5;
+    --light-success: #CAE8BD;
+    --light-error: #B0DB9C;
+}
+
+/* Light theme styles */
+body.light-theme {
+    background: linear-gradient(135deg, #BBD8A3 0%, #DDF6D2 100%);
+    color: var(--light-text);
+}
+body.light-theme .panel {
+    background-color: var(--light-panel);
+    color: var(--light-text);
+}
+body.light-theme .input {
+    background-color: var(--light-input);
+    color: var(--light-text);
+    border: 1px solid var(--light-border);
+}
+body.light-theme .button {
+    background-color: var(--light-button);
+    color: var(--light-text);
+    border: none;
+}
+body.light-theme .button:hover {
+    background-color: var(--light-button-hover);
+}
+body.light-theme .label {
+    color: var(--light-text-secondary);
+}
+body.light-theme table, body.light-theme th, body.light-theme td, body.light-theme .divide-y, body.light-theme .border-b, body.light-theme .border {
+    border-color: var(--light-border);
+}
+
+/* Full-width container and panels */
+.container {
+    width: 100%;
+    margin: 0;
+    max-width: none;
+}
+
+/* Number input container and buttons for right-aligned spinner */
+.number-input-container {
+    position: relative;
+    width: 100%;
+    display: flex;
+    align-items: center;
+}
+
+.number-input-buttons {
+    position: absolute;
+    right: 0.5rem;
+    top: 0.5rem;
+    bottom: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    width: 28px;
+    border-radius: 0.75rem;
+    overflow: hidden;
+    background: #181c24;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    z-index: 2;
+}
+
+.number-input-button {
+    width: 100%;
+    height: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    color: #4a90e2;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.8em;
+    padding: 0;
+    opacity: 0.7;
+}
+
+.number-input-button:first-child {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.number-input-button:hover {
+    background: rgba(74, 144, 226, 0.1);
+    opacity: 1;
+}
+
+.number-input-button:active {
+    background: rgba(74, 144, 226, 0.2);
+}
+
+/* Add right padding to number input so text doesn't overlap spinner */
+input[type="number"] {
+    padding-right: 40px !important;
+}
+
+/* Table header and cell equal width and full stretch */
+table {
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+table th, table td {
+    text-align: center;
+    width: 20%;
+    padding: 0.75rem 0;
+    word-break: break-word;
+    margin: 0;
+}
+
+/* Remove default number input spinner/arrows */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+input[type="number"] {
+    -moz-appearance: textfield;
+}
+
+/* Rest of your existing styles... */ 

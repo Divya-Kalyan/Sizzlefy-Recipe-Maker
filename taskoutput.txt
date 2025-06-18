@@ -1,0 +1,14 @@
+{
+  "averageWaitingTime": 2.33,
+  "averageTurnaroundTime": 30.00,
+  "executionOrder": [
+    "name1",
+    "yash",
+    "helllllloooo"
+  ],
+  "taskDetails": [
+    {"name": "name1", "priority": 1, "burst_time": 2, "waitingTime": 0, "turnaroundTime": 2},
+    {"name": "yash", "priority": 2, "burst_time": 3, "waitingTime": 2, "turnaroundTime": 5},
+    {"name": "helllllloooo", "priority": 5, "burst_time": 78, "waitingTime": 5, "turnaroundTime": 83}
+  ]
+}

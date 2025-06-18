@@ -1,0 +1,31 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "name": "TaskScheduler",
+      "request": "launch",
+      "mainClass": "TaskScheduler",
+      "projectName": "Priority_Scheduler_8ab2d043"
+    },
+    {
+      "name": "C/C++ Runner: Debug Session",
+      "type": "cppdbg",
+      "request": "launch",
+      "args": [],
+      "stopAtEntry": false,
+      "externalConsole": true,
+      "cwd": "c:/Users/kalya/OneDrive/Desktop/prioTech/Priority_Scheduler",
+      "program": "c:/Users/kalya/OneDrive/Desktop/prioTech/Priority_Scheduler/build/Debug/outDebug",
+      "MIMode": "gdb",
+      "miDebuggerPath": "gdb",
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ]
+    }
+  ]
+}

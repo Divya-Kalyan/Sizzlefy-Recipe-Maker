@@ -1,0 +1,30 @@
+📘 Scheduling Summary
+====================
+
+🕓 Average Waiting Time: 2.33 minutes
+⏳ Average Turnaround Time: 30.00 minutes
+
+🚀 Execution Order:
+1. name1
+2. yash
+3. helllllloooo
+
+📋 Task Details:
+name1:
+  Priority: 1
+  Duration: 2 minutes
+  Waiting Time: 0 minutes
+  Turnaround Time: 2 minutes
+
+yash:
+  Priority: 2
+  Duration: 3 minutes
+  Waiting Time: 2 minutes
+  Turnaround Time: 5 minutes
+
+helllllloooo:
+  Priority: 5
+  Duration: 78 minutes
+  Waiting Time: 5 minutes
+  Turnaround Time: 83 minutes
+
